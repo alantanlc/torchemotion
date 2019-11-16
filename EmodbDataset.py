@@ -11,7 +11,7 @@ class EmodbDataset(object):
     """
 
     _ext_audio = '.wav'
-    _emotions = { 'W': 1, 'L': 2, 'E': 3, 'A': 4, 'F': 5, 'T': 6, 'N': 7 } # A = anger, B = boredom, D = disgust, F = anxiety/fear, H = happiness, S = sadness, N = neutral
+    _emotions = { 'W': 1, 'L': 2, 'E': 3, 'A': 4, 'F': 5, 'T': 6, 'N': 7 } # W = anger, L = boredom, E = disgust, A = anxiety/fear, F = happiness, T = sadness, N = neutral
 
     def __init__(self, root='download'):
         """
