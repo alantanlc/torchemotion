@@ -1,38 +1,65 @@
-from __future__ import print_function, division
 import os
 import torch
-import pandas as pd
-from torch.utils.data import Dataset
 import torchaudio
+import pandas as pd
+import numpy as np
 
-class EmodbDataset(Dataset):
-    """EmodbDataset."""
+class EmodbDataset(object):
+    """
+        Create a Dataset for Emodb. Each item is a tuple of the form:
+        (waveform, sample_rate, emotion)
+    """
 
-    def __init__(self, csv_file, root_dir, transform=None):
+    _ext_audio = '.wav'
+    _emotions = { 'W': 1, 'L': 2, 'E': 3, 'A': 4, 'F': 5, 'T': 6, 'N': 7 } # A = anger, B = boredom, D = disgust, F = anxiety/fear, H = happiness, S = sadness, N = neutral
+
+    def __init__(self, root='download'):
         """
         Args:
-            csv_file (string): Path to the csv file with annotations.
-            root_dir (string): Directory with all the images.
-            transform (callable, optional): Optional transform to be applied on a sample.
+            root (string): Directory containing the wav folder
         """
-        self.emodb_frame = pd.read_csv(csv_file)
-        self.root_dir = root_dir
-        self.transform = transform
+        self.root = root
+
+        # Iterate through all audio files
+        data = []
+        for _, _, files in os.walk(root):
+            for file in files:
+                if file.endswith(self._ext_audio):
+                    # Construct file identifiers
+                    identifiers = [file[0:2], file[2:5], file[5], file[6], os.path.join('wav', file)]
+
+                    # Append identifier to data
+                    data.append(identifiers)
+
+        # Create pandas dataframe
+        self.df = pd.DataFrame(data, columns=['speaker_id', 'code', 'emotion', 'version', 'file'], dtype=np.float32)
+
+        # Map emotion labels to numeric values
+        self.df['emotion'] = self.df['emotion'].map(self._emotions).astype(np.float32)
 
     def __len__(self):
-        return len(self.emodb_frame)
+        return len(self.df)
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        filename = os.path.join(self.root_dir, self.emodb_frame.iloc[idx, 0])
-        waveform, sample_rate = torchaudio.load(filename)
-        label = self.emodb_frame.iloc[idx, 1]
+        audio_name = os.path.join(self.root, self.df.loc[idx, 'file'])
+        waveform, sample_rate = torchaudio.load(audio_name)
+        emotion = self.df.loc[idx, 'emotion']
 
-        if self.transform:
-            waveform = self.transform(waveform)
-
-        sample = {'waveform': waveform, 'label': label}
+        sample = {
+            'waveform': waveform,
+            'sample_rate': sample_rate,
+            'emotion': emotion
+        }
 
         return sample
+
+# Example: Load Emodb dataset
+# emodb_dataset = EmodbDataset('/home/alanwuha/Documents/Projects/datasets/emodb/download')
+
+# Example: Iterate through samples
+# for i in range(len(emodb_dataset)):
+#     sample = emodb_dataset[i]
+#     print(i, sample)
