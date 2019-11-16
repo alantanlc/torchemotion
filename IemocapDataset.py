@@ -1,9 +1,6 @@
 import os
-import warnings
-
 import torch
 import torchaudio
-
 import pandas as pd
 import numpy as np
 
@@ -13,13 +10,13 @@ class IemocapDataset(object):
         (waveform, sample_rate, emotion, activation, valence, dominance)
     """
 
-    _ext_audio = ".wav"
-    _emotions = {'ang': 1, 'hap': 2, 'exc': 3, 'sad': 4, 'fru': 5, 'fea': 6, 'sur': 7, 'neu': 8, 'xxx': 9 }
+    _ext_audio = '.wav'
+    _emotions = { 'ang': 1, 'hap': 2, 'exc': 3, 'sad': 4, 'fru': 5, 'fea': 6, 'sur': 7, 'neu': 8, 'xxx': 9 }
 
     def __init__(self, root='IEMOCAP_full_release'):
         """
         Args:
-            root (string): Directory containing the session folders
+            root (string): Directory containing the Session folders
         """
         self.root = root
 
@@ -53,7 +50,7 @@ class IemocapDataset(object):
         self.df['emotion'] = self.df['emotion'].map(self._emotions).astype(np.float32)
 
         # Map file to correct path w.r.t to root
-        self.df['file'] = [os.path.join('Session' + file[4], 'sentences', 'wav', file[:-5], file + '.wav') for file in self.df['file']]
+        self.df['file'] = [os.path.join('Session' + file[4], 'sentences', 'wav', file[:-5], file + self._ext_audio) for file in self.df['file']]
 
     def __len__(self):
         return len(self.df)
@@ -81,9 +78,9 @@ class IemocapDataset(object):
         return sample
 
 # Example: Load Iemocap dataset
-# iemocap_dataset = IemocapDataset('/home/alanwuha/Documents/Projects/iemocap/IEMOCAP_full_release')
+# iemocap_dataset = IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iemocap/IEMOCAP_full_release')
 
 # Example: Iterate through samples
 # for i in range(len(iemocap_dataset)):
 #     sample = iemocap_dataset[i]
-#     print(sample)
+#     print(i, sample)
