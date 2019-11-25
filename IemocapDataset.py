@@ -3,6 +3,7 @@ import torch
 import torchaudio
 import pandas as pd
 import numpy as np
+import torch.nn.functional as F
 
 class IemocapDataset(object):
     """
@@ -67,6 +68,7 @@ class IemocapDataset(object):
         dominance = self.df.loc[idx, 'dominance']
 
         sample = {
+            'path': audio_name,
             'waveform': waveform,
             'sample_rate': sample_rate,
             'emotion': emotion,
@@ -76,6 +78,32 @@ class IemocapDataset(object):
         }
 
         return sample
+
+    def collate_fn(batch):
+        # Frame the signal into 20-40ms frames. 25ms is standard.
+        # This means that the frame length for a 16kHz signal is 0.025 * 16000 = 400 samples.
+        # Frame step is usually something like 10ms (160 samples), which allows some overlap to the frames.
+        # The first 400 sample frame starts at sample 0, the next 400 sample frame starts at sample 160 etc until the end of the speech file is reached.
+        # If the speech file does not divide into an even number, pad it with zeros so that it does.
+        sample_rate = 16000
+        n_channels = 1
+        frame_length = np.int(0.025 * sample_rate)
+        step_length = np.int(0.01 * sample_rate)
+
+        frames = torch.zeros(0, n_channels, frame_length)
+        for item in batch:
+            waveform = item['waveform']
+            original_waveform_length = waveform.shape[1]
+            n_frames = np.int(np.ceil((original_waveform_length - frame_length) / step_length) + 1)
+            padding_length = frame_length if original_waveform_length < frame_length else (frame_length + (n_frames - 1) * step_length - original_waveform_length)
+            padded_waveform = F.pad(waveform, (0, padding_length))
+
+            item_frames = torch.zeros(n_frames, n_channels, frame_length)
+            for i in range(n_frames):
+                item_frames[i] = padded_waveform[:, i*step_length:i*step_length+frame_length]
+            frames = torch.cat((frames, item_frames), 0)
+
+        return frames
 
 # Example: Load Iemocap dataset
 # iemocap_dataset = IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iemocap/IEMOCAP_full_release')
