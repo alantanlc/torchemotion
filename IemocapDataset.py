@@ -90,7 +90,10 @@ class IemocapDataset(object):
         frame_length = np.int(0.025 * sample_rate)
         step_length = np.int(0.01 * sample_rate)
 
+        # Initialize output
         frames = torch.zeros(0, n_channels, frame_length)
+        emotions = torch.zeros(0)
+
         for item in batch:
             waveform = item['waveform']
             original_waveform_length = waveform.shape[1]
@@ -98,12 +101,17 @@ class IemocapDataset(object):
             padding_length = frame_length if original_waveform_length < frame_length else (frame_length + (n_frames - 1) * step_length - original_waveform_length)
             padded_waveform = F.pad(waveform, (0, padding_length))
 
+            # Construct tensor of frames
             item_frames = torch.zeros(n_frames, n_channels, frame_length)
             for i in range(n_frames):
                 item_frames[i] = padded_waveform[:, i*step_length:i*step_length+frame_length]
             frames = torch.cat((frames, item_frames), 0)
 
-        return frames
+            # Construct tensor of emotion labels
+            emotion = torch.tensor([item['emotion']])
+            emotions = torch.cat((emotions, emotion.repeat(n_frames)), 0)
+
+        return frames, emotions
 
 # Example: Load Iemocap dataset
 # iemocap_dataset = IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iemocap/IEMOCAP_full_release')

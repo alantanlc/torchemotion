@@ -17,5 +17,5 @@ dataset_test = torch.utils.data.Subset(iemocap_dataset, indices[-50:])
 data_loader_train = torch.utils.data.DataLoader(iemocap_dataset, batch_size=2, shuffle=False, num_workers=4, collate_fn=IemocapDataset.collate_fn)
 data_loader_test = torch.utils.data.DataLoader(dataset_test, batch_size=1, shuffle=False, num_workers=4, collate_fn=IemocapDataset.collate_fn)
 
-for i, data in enumerate(data_loader_train):
+for i, (data, emotions) in enumerate(data_loader_train):
     print(data.shape)
