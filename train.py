@@ -4,9 +4,11 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
+from DNN import *
 
 import time
 import copy
+from tqdm import tqdm
 
 def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     since = time.time()
@@ -28,10 +30,12 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             running_loss = 0.0
             running_corrects = 0
 
+            dataset_sizes[phase] = 0
+
             # Iterate over data.
-            for inputs, emotions in dataloaders[phase]:
+            for i, (inputs, emotions) in enumerate(tqdm(dataloaders[phase], desc='Train iterations')):
                 inputs = inputs.to(device)
-                emotions = emotions.to(device)
+                emotions = emotions.long().to(device)
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
@@ -49,14 +53,16 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
                         optimizer.step()
 
                 # statistics
-                running_loss += loss.item() * inputs.size(0) / 1
-                running_corrects += torch.sum(preds == emotions.data) / 1
+                running_loss += loss.item() * inputs.size(0)
+                running_corrects += torch.sum(preds == emotions.data)
+
+                dataset_sizes[phase] += inputs.size(0)
 
             if phase == 'train':
                 scheduler.step()
 
-            epoch_loss = running_loss
-            epoch_acc = running_corrects.double()
+            epoch_loss = running_loss / dataset_sizes[phase]
+            epoch_acc = running_corrects.double() / dataset_sizes[phase]
 
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
 
@@ -87,4 +93,19 @@ datasets = {
     'train': torch.utils.data.Subset(iemocap_dataset, indices[:-50]),
     'val': torch.utils.data.Subset(iemocap_dataset, indices[-50:])
 }
+dataset_sizes = { x: 0 for x in ['train', 'val'] }
 dataloaders = { x: torch.utils.data.DataLoader(datasets[x], batch_size=4, shuffle=True, num_workers=4, collate_fn=IemocapDataset.collate_fn) for x in ['train', 'val'] }
+
+# Model
+model_ft = DNN(400, 1000, 1500, 9)
+model_ft = model_ft.to(device)
+criterion = nn.CrossEntropyLoss()
+
+# Observe that all parameters are being optimized
+optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
+
+# Decay LR by a factor of 0.1 every 7 epochs
+exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
+
+# Train and evaluate
+model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)

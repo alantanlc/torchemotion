@@ -12,7 +12,7 @@ class IemocapDataset(object):
     """
 
     _ext_audio = '.wav'
-    _emotions = { 'ang': 1, 'hap': 2, 'exc': 3, 'sad': 4, 'fru': 5, 'fea': 6, 'sur': 7, 'neu': 8, 'xxx': 9 }
+    _emotions = { 'ang': 0, 'hap': 1, 'exc': 2, 'sad': 3, 'fru': 4, 'fea': 5, 'sur': 6, 'neu': 7, 'xxx': 8 }
 
     def __init__(self, root='IEMOCAP_full_release'):
         """
@@ -86,12 +86,13 @@ class IemocapDataset(object):
         # The first 400 sample frame starts at sample 0, the next 400 sample frame starts at sample 160 etc until the end of the speech file is reached.
         # If the speech file does not divide into an even number, pad it with zeros so that it does.
         sample_rate = 16000
-        n_channels = 1
+        # n_channels = 1
         frame_length = np.int(0.025 * sample_rate)
         step_length = np.int(0.01 * sample_rate)
 
         # Initialize output
-        frames = torch.zeros(0, n_channels, frame_length)
+        # frames = torch.zeros(0, n_channels, frame_length)
+        frames = torch.zeros(0, frame_length)
         emotions = torch.zeros(0)
 
         for item in batch:
@@ -100,11 +101,14 @@ class IemocapDataset(object):
             n_frames = np.int(np.ceil((original_waveform_length - frame_length) / step_length) + 1)
             padding_length = frame_length if original_waveform_length < frame_length else (frame_length + (n_frames - 1) * step_length - original_waveform_length)
             padded_waveform = F.pad(waveform, (0, padding_length))
+            padded_waveform = padded_waveform.view(-1)
 
             # Construct tensor of frames
-            item_frames = torch.zeros(n_frames, n_channels, frame_length)
+            # item_frames = torch.zeros(n_frames, n_channels, frame_length)
+            item_frames = torch.zeros(n_frames, frame_length)
             for i in range(n_frames):
-                item_frames[i] = padded_waveform[:, i*step_length:i*step_length+frame_length]
+                item_frames[i] = padded_waveform[i*step_length:i*step_length+frame_length]
+                # item_frames[i] = padded_waveform[:, i*step_length:i*step_length+frame_length]
             frames = torch.cat((frames, item_frames), 0)
 
             # Construct tensor of emotion labels
