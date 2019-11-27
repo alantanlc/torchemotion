@@ -61,6 +61,7 @@ class IemocapDataset(object):
             idx = idx.tolist()
 
         audio_name = os.path.join(self.root, self.df.loc[idx, 'file'])
+        duration = self.df.loc[idx, 'end'] - self.df.loc[idx, 'start']
         waveform, sample_rate = torchaudio.load(audio_name)
         emotion = self.df.loc[idx, 'emotion']
         activation = self.df.loc[idx, 'activation']
@@ -69,6 +70,7 @@ class IemocapDataset(object):
 
         sample = {
             'path': audio_name,
+            'duration': duration,
             'waveform': waveform,
             'sample_rate': sample_rate,
             'emotion': emotion,
@@ -78,6 +80,19 @@ class IemocapDataset(object):
         }
 
         return sample
+
+    def collage_fn_cnn(batch):
+        # Clip or pad the signal into 3 seconds.
+        sample_rate = 16000
+        n_channels = 1
+        frame_length = 3.0 * sample_rate
+
+        # for item in batch:
+        #     waveform = item['waveform']
+        #     original_waveform_length = waveform.shape[1]
+        #     waveform = F.pad(waveform, (0, frame_length - original_waveform_length)) if original_waveform_length < frame_length else waveform[:frame_length]
+
+        return batch['waveform'], batch['emotions']
 
     def collate_fn(batch):
         # Frame the signal into 20-40ms frames. 25ms is standard.
@@ -123,9 +138,15 @@ class IemocapDataset(object):
         return frames, emotions, n_frames
 
 # Example: Load Iemocap dataset
-# iemocap_dataset = IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iemocap/IEMOCAP_full_release')
+iemocap_dataset = IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iemocap/IEMOCAP_full_release')
 
 # Example: Iterate through samples
 # for i in range(len(iemocap_dataset)):
 #     sample = iemocap_dataset[i]
 #     print(i, sample)
+
+# Number of audio by duration
+# dataset_duration = np.ceil(iemocap_dataset.df['end'] - iemocap_dataset.df['start'])
+# idx = np.where(dataset_duration == 35)
+# durations = np.unique(dataset_duration)
+# durations_count = [np.sum(dataset_duration == i) for i in durations]

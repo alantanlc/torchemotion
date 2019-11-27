@@ -25,8 +25,8 @@ class CNN(nn.Module):
         x = self.pool1(x)
 
         # block 2:          32 x 16 x 64 --> 64 x 8 x 32
-        x = self.conv2(x)
-        x = self.pool2(x)
+        x = self.conv1(x)
+        x = self.pool1(x)
 
         # block 3:          64 x 8 x 32 --> 16384 --> 1024
         x = x.view(-1, 16384)
