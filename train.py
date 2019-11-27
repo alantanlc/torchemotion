@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
 from DNN import *
+from VGG_convnet import *
 
 import time
 import copy
@@ -22,7 +23,7 @@ def compute_number_of_corrects(preds, data, n_frames):
         n_corrects += (target_label == predicted_label)
     return n_corrects
 
-def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
+def train_model_vgg(model, criterion, optimizer, scheduler, num_epochs=25):
     since = time.time()
 
     best_model_wts = copy.deepcopy(model.state_dict())
@@ -45,7 +46,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             # Iterate over data.
             for inputs, labels in dataloaders[phase]:
                 inputs = inputs.to(device)
-                labels = labels.to(device)
+                labels = labels.long().to(device)
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
@@ -170,15 +171,16 @@ iemocap_dataset = IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iem
 # split the dataset in train and test set
 indices = torch.randperm(len(iemocap_dataset)).tolist()
 datasets = {
-    'train': torch.utils.data.Subset(iemocap_dataset, indices[:200]),
+    'train': torch.utils.data.Subset(iemocap_dataset, indices[:-50]),
     'val': torch.utils.data.Subset(iemocap_dataset, indices[-50:])
 }
 dataset_sizes = { x: len(datasets[x]) for x in ['train', 'val'] }
-dataloaders = { x: torch.utils.data.DataLoader(datasets[x], batch_size=2, shuffle=True, num_workers=4, collate_fn=IemocapDataset.collate_fn) for x in ['train', 'val'] }
+# dataloaders = { x: torch.utils.data.DataLoader(datasets[x], batch_size=2, shuffle=True, num_workers=4, collate_fn=IemocapDataset.collate_fn) for x in ['train', 'val'] }
+dataloaders = { x: torch.utils.data.DataLoader(datasets[x], batch_size=128, shuffle=True, num_workers=4, collate_fn=IemocapDataset.collage_fn_vgg) for x in ['train', 'val'] }
 
 # Model
-model_ft = DNN(400, 1000, 1500, 9)
-model_ft = VGG
+# model_ft = DNN(400, 1000, 1500, 9)
+model_ft = VGG_convnet()
 model_ft = model_ft.to(device)
 criterion = nn.CrossEntropyLoss()
 
@@ -190,4 +192,5 @@ optimizer_ft = optim.Adam(model_ft.parameters(), lr=0.001)
 exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
 
 # Train and evaluate
-model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)
+# model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)
+model_ft = train_model_vgg(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)

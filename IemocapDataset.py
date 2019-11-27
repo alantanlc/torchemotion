@@ -81,18 +81,24 @@ class IemocapDataset(object):
 
         return sample
 
-    def collage_fn_cnn(batch):
+    def collage_fn_vgg(batch):
         # Clip or pad the signal into 3 seconds.
         sample_rate = 16000
         n_channels = 1
-        frame_length = 3.0 * sample_rate
+        frame_length = np.int(4.020 * sample_rate)
 
-        # for item in batch:
-        #     waveform = item['waveform']
-        #     original_waveform_length = waveform.shape[1]
-        #     waveform = F.pad(waveform, (0, frame_length - original_waveform_length)) if original_waveform_length < frame_length else waveform[:frame_length]
+        # Initialize output
+        waveforms = torch.zeros(0, n_channels, frame_length)
+        emotions = torch.zeros(0)
 
-        return batch['waveform'], batch['emotions']
+        for i, item in enumerate(batch):
+            waveform = item['waveform']
+            original_waveform_length = waveform.shape[1]
+            padded_waveform = F.pad(waveform, (0, frame_length - original_waveform_length)) if original_waveform_length < frame_length else waveform[:, :frame_length]
+            waveforms = torch.cat((waveforms, padded_waveform.unsqueeze(0)))
+            emotions = torch.cat((emotions, torch.tensor([item['emotion']])), 0)
+
+        return waveforms, emotions
 
     def collate_fn(batch):
         # Frame the signal into 20-40ms frames. 25ms is standard.
@@ -115,7 +121,7 @@ class IemocapDataset(object):
             waveform = item['waveform']
             original_waveform_length = waveform.shape[1]
             item_n_frames = np.int(np.ceil((original_waveform_length - frame_length) / step_length) + 1)
-            padding_length = frame_length if original_waveform_length < frame_length else (frame_length + (item_n_frames - 1) * step_length - original_waveform_length)
+            padding_length = frame_length - original_waveform_length if original_waveform_length < frame_length else (frame_length + (item_n_frames - 1) * step_length - original_waveform_length)
             padded_waveform = F.pad(waveform, (0, padding_length))
             padded_waveform = padded_waveform.view(-1)
 
