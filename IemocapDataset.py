@@ -156,3 +156,5 @@ iemocap_dataset = IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iem
 # idx = np.where(dataset_duration == 35)
 # durations = np.unique(dataset_duration)
 # durations_count = [np.sum(dataset_duration == i) for i in durations]
+
+# TODO: Filter dataset by Session, Speaker, and Emotion
