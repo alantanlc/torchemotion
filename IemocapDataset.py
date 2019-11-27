@@ -93,29 +93,34 @@ class IemocapDataset(object):
         # Initialize output
         # frames = torch.zeros(0, n_channels, frame_length)
         frames = torch.zeros(0, frame_length)
+        n_frames = torch.zeros(0)
         emotions = torch.zeros(0)
 
         for item in batch:
             waveform = item['waveform']
             original_waveform_length = waveform.shape[1]
-            n_frames = np.int(np.ceil((original_waveform_length - frame_length) / step_length) + 1)
-            padding_length = frame_length if original_waveform_length < frame_length else (frame_length + (n_frames - 1) * step_length - original_waveform_length)
+            item_n_frames = np.int(np.ceil((original_waveform_length - frame_length) / step_length) + 1)
+            padding_length = frame_length if original_waveform_length < frame_length else (frame_length + (item_n_frames - 1) * step_length - original_waveform_length)
             padded_waveform = F.pad(waveform, (0, padding_length))
             padded_waveform = padded_waveform.view(-1)
 
             # Construct tensor of frames
             # item_frames = torch.zeros(n_frames, n_channels, frame_length)
-            item_frames = torch.zeros(n_frames, frame_length)
-            for i in range(n_frames):
+            item_frames = torch.zeros(item_n_frames, frame_length)
+            for i in range(item_n_frames):
                 item_frames[i] = padded_waveform[i*step_length:i*step_length+frame_length]
                 # item_frames[i] = padded_waveform[:, i*step_length:i*step_length+frame_length]
             frames = torch.cat((frames, item_frames), 0)
 
             # Construct tensor of emotion labels
             emotion = torch.tensor([item['emotion']])
-            emotions = torch.cat((emotions, emotion.repeat(n_frames)), 0)
+            emotions = torch.cat((emotions, emotion.repeat(item_n_frames)), 0)
 
-        return frames, emotions
+            # Construct tensor of n_frames (contains a list of number of frames per item)
+            item_n_frames = torch.tensor([float(item_n_frames)])
+            n_frames = torch.cat((n_frames, item_n_frames), 0)
+
+        return frames, emotions, n_frames
 
 # Example: Load Iemocap dataset
 # iemocap_dataset = IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iemocap/IEMOCAP_full_release')

@@ -9,6 +9,18 @@ from DNN import *
 import time
 import copy
 from tqdm import tqdm
+from scipy import stats
+
+def compute_number_of_corrects(preds, data, n_frames):
+    # Compute number of corrects for variable input batch size
+    n_corrects = 0
+    for i in range(len(n_frames)):
+        start_idx = 0 if i == 0 else torch.sum(n_frames[:i]).long()
+        end_idx = n_frames[i].long()
+        target_label = data[start_idx]
+        predicted_label = stats.mode(preds[start_idx:start_idx+end_idx]).mode[0]
+        n_corrects += (target_label == predicted_label)
+    return n_corrects
 
 def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     since = time.time()
@@ -30,10 +42,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             running_loss = 0.0
             running_corrects = 0
 
-            dataset_sizes[phase] = 0
-
             # Iterate over data.
-            for i, (inputs, emotions) in enumerate(tqdm(dataloaders[phase], desc='Train iterations')):
+            for inputs, emotions, n_frames in dataloaders[phase]:
                 inputs = inputs.to(device)
                 emotions = emotions.long().to(device)
 
@@ -54,9 +64,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 
                 # statistics
                 running_loss += loss.item() * inputs.size(0)
-                running_corrects += torch.sum(preds == emotions.data)
-
-                dataset_sizes[phase] += inputs.size(0)
+                # running_corrects += torch.sum(preds == emotions.data)
+                running_corrects += compute_number_of_corrects(preds, emotions.data, n_frames)
 
             if phase == 'train':
                 scheduler.step()
@@ -93,8 +102,8 @@ datasets = {
     'train': torch.utils.data.Subset(iemocap_dataset, indices[:-50]),
     'val': torch.utils.data.Subset(iemocap_dataset, indices[-50:])
 }
-dataset_sizes = { x: 0 for x in ['train', 'val'] }
-dataloaders = { x: torch.utils.data.DataLoader(datasets[x], batch_size=4, shuffle=True, num_workers=4, collate_fn=IemocapDataset.collate_fn) for x in ['train', 'val'] }
+dataset_sizes = { x: len(datasets[x]) for x in ['train', 'val'] }
+dataloaders = { x: torch.utils.data.DataLoader(datasets[x], batch_size=2, shuffle=True, num_workers=4, collate_fn=IemocapDataset.collate_fn) for x in ['train', 'val'] }
 
 # Model
 model_ft = DNN(400, 1000, 1500, 9)
