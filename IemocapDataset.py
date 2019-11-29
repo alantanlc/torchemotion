@@ -47,6 +47,10 @@ class IemocapDataset(object):
         # Create pandas dataframe
         self.df = pd.DataFrame(data, columns=['start', 'end', 'file', 'emotion', 'activation', 'valence', 'dominance'], dtype=np.float32)
 
+        # Filter
+        filtered_emotions = self.df['emotion'].isin(['ang', 'hap', 'sad', 'neu'])
+        self.df = self.df[filtered_emotions].reset_index()
+
         # Map emotion labels to numeric values
         self.df['emotion'] = self.df['emotion'].map(self._emotions).astype(np.float32)
 
@@ -144,7 +148,7 @@ class IemocapDataset(object):
         return frames, emotions, n_frames
 
 # Example: Load Iemocap dataset
-iemocap_dataset = IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iemocap/IEMOCAP_full_release')
+# iemocap_dataset = IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iemocap/IEMOCAP_full_release')
 
 # Example: Iterate through samples
 # for i in range(len(iemocap_dataset)):

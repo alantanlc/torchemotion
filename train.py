@@ -171,8 +171,8 @@ iemocap_dataset = IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iem
 # split the dataset in train and test set
 indices = torch.randperm(len(iemocap_dataset)).tolist()
 datasets = {
-    'train': torch.utils.data.Subset(iemocap_dataset, indices[:-50]),
-    'val': torch.utils.data.Subset(iemocap_dataset, indices[-50:])
+    'train': torch.utils.data.Subset(iemocap_dataset, indices[:-200]),
+    'val': torch.utils.data.Subset(iemocap_dataset, indices[-200:])
 }
 dataset_sizes = { x: len(datasets[x]) for x in ['train', 'val'] }
 # dataloaders = { x: torch.utils.data.DataLoader(datasets[x], batch_size=2, shuffle=True, num_workers=4, collate_fn=IemocapDataset.collate_fn) for x in ['train', 'val'] }
