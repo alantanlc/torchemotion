@@ -19,7 +19,7 @@ class IemocapDataset(object):
                  emotions=['ang', 'hap', 'exc', 'sad', 'neu'],
                  sessions=[1, 2, 3, 4, 5],
                  script_impro=['script', 'impro'],
-                 gender=['M', 'F']):
+                 genders=['M', 'F']):
         """
         Args:
             root (string): Directory containing the Session folders
@@ -57,11 +57,22 @@ class IemocapDataset(object):
 
         # Filter by emotions
         filtered_emotions = self.df['emotion'].isin(emotions)
-        self.df = self.df[filtered_emotions].reset_index()
+        self.df = self.df[filtered_emotions]
 
         # Filter by sessions
         filtered_sessions = self.df['session'].isin(sessions)
-        self.df = self.df[filtered_sessions].reset_index()
+        self.df = self.df[filtered_sessions]
+
+        # Filter by script_impro
+        filtered_script_impro = self.df['script_impro'].str.contains('|'.join(script_impro))
+        self.df = self.df[filtered_script_impro]
+
+        # Filter by gender
+        filtered_genders = self.df['gender'].isin(genders)
+        self.df = self.df[filtered_genders]
+
+        # Reset indices
+        self.df = self.df.reset_index()
 
         # Map emotion labels to numeric values
         self.df['emotion'] = self.df['emotion'].map(self._emotions).astype(np.float32)
