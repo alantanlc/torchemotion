@@ -165,18 +165,14 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 # train on the GPU or on the CPU, if a GPU is not available
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-# load dataset
-iemocap_dataset = IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iemocap/IEMOCAP_full_release')
-
-# split the dataset in train and test set
-indices = torch.randperm(len(iemocap_dataset)).tolist()
+# load train and valid datasets
 datasets = {
-    'train': torch.utils.data.Subset(iemocap_dataset, indices[:-200]),
-    'val': torch.utils.data.Subset(iemocap_dataset, indices[-200:])
+    'train': IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iemocap/IEMOCAP_full_release', sessions=[1, 2, 3, 4]),
+    'val': IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iemocap/IEMOCAP_full_release', sessions=[5])
 }
 dataset_sizes = { x: len(datasets[x]) for x in ['train', 'val'] }
 # dataloaders = { x: torch.utils.data.DataLoader(datasets[x], batch_size=2, shuffle=True, num_workers=4, collate_fn=IemocapDataset.collate_fn) for x in ['train', 'val'] }
-dataloaders = { x: torch.utils.data.DataLoader(datasets[x], batch_size=128, shuffle=True, num_workers=4, collate_fn=IemocapDataset.collage_fn_vgg) for x in ['train', 'val'] }
+dataloaders = { x: torch.utils.data.DataLoader(datasets[x], batch_size=128, shuffle=(x=='train'), num_workers=4, collate_fn=IemocapDataset.collage_fn_vgg) for x in ['train', 'val'] }
 
 # Model
 # model_ft = DNN(400, 1000, 1500, 9)

@@ -12,9 +12,14 @@ class IemocapDataset(object):
     """
 
     _ext_audio = '.wav'
-    _emotions = { 'ang': 0, 'hap': 1, 'exc': 2, 'sad': 3, 'fru': 4, 'fea': 5, 'sur': 6, 'neu': 7, 'xxx': 8 }
+    _emotions = { 'ang': 0, 'hap': 1, 'exc': 1, 'sad': 3, 'fru': 4, 'fea': 5, 'sur': 6, 'neu': 7, 'xxx': 8 }
 
-    def __init__(self, root='IEMOCAP_full_release'):
+    def __init__(self,
+                 root='IEMOCAP_full_release',
+                 emotions=['ang', 'hap', 'exc', 'sad', 'neu'],
+                 sessions=[1, 2, 3, 4, 5],
+                 script_impro=['script', 'impro'],
+                 gender=['M', 'F']):
         """
         Args:
             root (string): Directory containing the Session folders
@@ -44,12 +49,19 @@ class IemocapDataset(object):
                              .split('\t')
                          for line in f if line.startswith('[')]
 
-        # Create pandas dataframe
-        self.df = pd.DataFrame(data, columns=['start', 'end', 'file', 'emotion', 'activation', 'valence', 'dominance'], dtype=np.float32)
+        # Get session number, script/impro, speaker gender, utterance number
+        data = [d + [d[2][4], d[2].split('_')[1], d[2][-4], d[2][-3:]] for d in data]
 
-        # Filter
-        filtered_emotions = self.df['emotion'].isin(['ang', 'hap', 'sad', 'neu'])
+        # Create pandas dataframe
+        self.df = pd.DataFrame(data, columns=['start', 'end', 'file', 'emotion', 'activation', 'valence', 'dominance', 'session', 'script_impro', 'gender', 'utterance'], dtype=np.float32)
+
+        # Filter by emotions
+        filtered_emotions = self.df['emotion'].isin(emotions)
         self.df = self.df[filtered_emotions].reset_index()
+
+        # Filter by sessions
+        filtered_sessions = self.df['session'].isin(sessions)
+        self.df = self.df[filtered_sessions].reset_index()
 
         # Map emotion labels to numeric values
         self.df['emotion'] = self.df['emotion'].map(self._emotions).astype(np.float32)
@@ -65,7 +77,6 @@ class IemocapDataset(object):
             idx = idx.tolist()
 
         audio_name = os.path.join(self.root, self.df.loc[idx, 'file'])
-        duration = self.df.loc[idx, 'end'] - self.df.loc[idx, 'start']
         waveform, sample_rate = torchaudio.load(audio_name)
         emotion = self.df.loc[idx, 'emotion']
         activation = self.df.loc[idx, 'activation']
@@ -74,7 +85,6 @@ class IemocapDataset(object):
 
         sample = {
             'path': audio_name,
-            'duration': duration,
             'waveform': waveform,
             'sample_rate': sample_rate,
             'emotion': emotion,
@@ -86,7 +96,7 @@ class IemocapDataset(object):
         return sample
 
     def collage_fn_vgg(batch):
-        # Clip or pad the signal into 3 seconds.
+        # Clip or pad each utterance audio into 4.020 seconds.
         sample_rate = 16000
         n_channels = 1
         frame_length = np.int(4.020 * sample_rate)
@@ -95,7 +105,7 @@ class IemocapDataset(object):
         waveforms = torch.zeros(0, n_channels, frame_length)
         emotions = torch.zeros(0)
 
-        for i, item in enumerate(batch):
+        for item in batch:
             waveform = item['waveform']
             original_waveform_length = waveform.shape[1]
             padded_waveform = F.pad(waveform, (0, frame_length - original_waveform_length)) if original_waveform_length < frame_length else waveform[:, :frame_length]
@@ -161,4 +171,4 @@ class IemocapDataset(object):
 # durations = np.unique(dataset_duration)
 # durations_count = [np.sum(dataset_duration == i) for i in durations]
 
-# TODO: Filter dataset by Session, Speaker, and Emotion
+# print('End')
