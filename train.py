@@ -167,8 +167,8 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 
 # load train and valid datasets
 datasets = {
-    'train': IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iemocap/IEMOCAP_full_release', sessions=[1, 2, 3, 4]),
-    'val': IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iemocap/IEMOCAP_full_release', sessions=[5])
+    'train': IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iemocap/IEMOCAP_full_release', sessions=[1, 2, 4, 5]),
+    'val': IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iemocap/IEMOCAP_full_release', sessions=[3])
 }
 dataset_sizes = { x: len(datasets[x]) for x in ['train', 'val'] }
 # dataloaders = { x: torch.utils.data.DataLoader(datasets[x], batch_size=2, shuffle=True, num_workers=4, collate_fn=IemocapDataset.collate_fn) for x in ['train', 'val'] }
