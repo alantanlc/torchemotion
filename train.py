@@ -1,15 +1,13 @@
-from IemocapDataset import *
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
-from DNN import *
-from VGG_convnet import *
+
+from datasets.IemocapDataset import IemocapDataset
+from models.VGG_convnet import VGG_convnet
 
 import time
 import copy
-from tqdm import tqdm
 from scipy import stats
 
 def compute_number_of_corrects(preds, data, n_frames):
