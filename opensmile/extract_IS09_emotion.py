@@ -5,7 +5,7 @@ from datasets.IemocapDataset import IemocapDataset
 start_time = time.time()
 
 # Specify output file name and the file format that SMILEXtract will output based on the given opensmile configuration file
-output_file_name = 'output_2'
+output_file_name = 'iemocap_is09_emotion'
 output_file_ext = '.arff'
 
 # Load dataset
