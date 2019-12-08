@@ -5,6 +5,7 @@ from torch.optim import lr_scheduler
 
 from datasets.IemocapDataset import IemocapDataset
 from models.VGG_convnet import VGG_convnet
+from models.DNN import DNN
 
 import time
 import copy
@@ -169,12 +170,12 @@ datasets = {
     'val': IemocapDataset('/home/alanwuha/Documents/Projects/datasets/iemocap/IEMOCAP_full_release', sessions=[3])
 }
 dataset_sizes = { x: len(datasets[x]) for x in ['train', 'val'] }
-# dataloaders = { x: torch.utils.data.DataLoader(datasets[x], batch_size=2, shuffle=True, num_workers=4, collate_fn=IemocapDataset.collate_fn) for x in ['train', 'val'] }
-dataloaders = { x: torch.utils.data.DataLoader(datasets[x], batch_size=128, shuffle=(x=='train'), num_workers=4, collate_fn=IemocapDataset.collage_fn_vgg) for x in ['train', 'val'] }
+dataloaders = { x: torch.utils.data.DataLoader(datasets[x], batch_size=2, shuffle=True, num_workers=4, collate_fn=IemocapDataset.collate_fn) for x in ['train', 'val'] }
+# dataloaders = { x: torch.utils.data.DataLoader(datasets[x], batch_size=128, shuffle=(x=='train'), num_workers=4, collate_fn=IemocapDataset.collage_fn_vgg) for x in ['train', 'val'] }
 
 # Model
-# model_ft = DNN(400, 1000, 1500, 9)
-model_ft = VGG_convnet()
+model_ft = DNN(400, 1000, 1500, 9)
+# model_ft = VGG_convnet()
 model_ft = model_ft.to(device)
 criterion = nn.CrossEntropyLoss()
 
@@ -186,5 +187,5 @@ optimizer_ft = optim.Adam(model_ft.parameters(), lr=0.001)
 exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
 
 # Train and evaluate
-# model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)
-model_ft = train_model_vgg(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)
+model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)
+# model_ft = train_model_vgg(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)

@@ -1,6 +1,7 @@
 import os
 import torch
 import torchaudio
+import torchaudio.transforms as transforms
 import pandas as pd
 import numpy as np
 import torch.nn.functional as F
@@ -125,6 +126,45 @@ class IemocapDataset(object):
 
         return waveforms, emotions
 
+    def collate_fn_segments(batch):
+        sample_rate = 16000
+        segment_length = np.int(0.264 * sample_rate)
+        step_length = np.int(0.025 * sample_rate)
+
+        # Initialize output
+        segments = torch.zeros(0, segment_length)
+        n_segments = torch.zeros(0)
+        emotions = torch.zeros(0)
+
+        # Iterate through samples in batch
+        for item in batch:
+            waveform = item['waveform']
+            original_waveform_length = waveform.shape[1]
+
+            # Compute number of segments given input waveform, segment, and step lengths
+            item_n_segments = np.int(np.ceil((original_waveform_length - segment_length) / step_length) + 1)
+
+            # Compute and apply padding to waveform
+            padding_length = segment_length - original_waveform_length if original_waveform_length < segment_length else (segment_length + (item_n_segments - 1) * step_length - original_waveform_length)
+            padded_waveform = F.pad(waveform, (0, padding_length))
+            padded_waveform = padded_waveform.view(-1)
+
+            # Construct tensor of segments
+            item_segments = torch.zeros(item_n_segments, segment_length)
+            for i in range(item_n_segments):
+                item_segments[i] = padded_waveform[i*step_length:i*step_length+segment_length]
+            segments = torch.cat((segments, item_segments), 0)
+
+            # Construct tensor of emotion labels
+            emotion = torch.tensor([item['emotion']])
+            emotions = torch.cat((emotions, emotion.repeat(item_n_segments)), 0)
+
+            # Construct tensor of n_frames (contains a list of number of frames per item)
+            item_n_segments = torch.tensor([float(item_n_segments)])
+            n_segments = torch.cat((n_segments, item_n_segments), 0)
+
+        return segments, emotions, n_segments
+
     def collate_fn(batch):
         # Frame the signal into 20-40ms frames. 25ms is standard.
         # This means that the frame length for a 16kHz signal is 0.025 * 16000 = 400 samples.
@@ -145,7 +185,11 @@ class IemocapDataset(object):
         for item in batch:
             waveform = item['waveform']
             original_waveform_length = waveform.shape[1]
+
+            # Compute number of frames given input waveform, frame and step lengths
             item_n_frames = np.int(np.ceil((original_waveform_length - frame_length) / step_length) + 1)
+
+            # Compute and apply padding to waveform
             padding_length = frame_length - original_waveform_length if original_waveform_length < frame_length else (frame_length + (item_n_frames - 1) * step_length - original_waveform_length)
             padded_waveform = F.pad(waveform, (0, padding_length))
             padded_waveform = padded_waveform.view(-1)
