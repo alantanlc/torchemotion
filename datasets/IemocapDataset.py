@@ -1,7 +1,6 @@
 import os
 import torch
 import torchaudio
-import torchaudio.transforms as transforms
 import pandas as pd
 import numpy as np
 import torch.nn.functional as F
@@ -135,6 +134,7 @@ class IemocapDataset(object):
         segments = torch.zeros(0, segment_length)
         n_segments = torch.zeros(0)
         emotions = torch.zeros(0)
+        filenames = []
 
         # Iterate through samples in batch
         for item in batch:
@@ -159,11 +159,14 @@ class IemocapDataset(object):
             emotion = torch.tensor([item['emotion']])
             emotions = torch.cat((emotions, emotion.repeat(item_n_segments)), 0)
 
+            # Construct list of
+            filenames += [item['path'].split('/')[-1]]*item_n_segments
+
             # Construct tensor of n_frames (contains a list of number of frames per item)
             item_n_segments = torch.tensor([float(item_n_segments)])
             n_segments = torch.cat((n_segments, item_n_segments), 0)
 
-        return segments, emotions, n_segments
+        return segments, emotions, n_segments, filenames
 
     def collate_fn(batch):
         # Frame the signal into 20-40ms frames. 25ms is standard.

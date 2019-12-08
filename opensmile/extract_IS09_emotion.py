@@ -23,21 +23,18 @@ if os.path.exists(output_file_name):
 specgram_transform = torchaudio.transforms.Spectrogram(n_fft=256, win_length=256, hop_length=128)
 
 # Iterate through dataset using dataloader to get segments of each utterance
-for segments, emotions, n_segments in dataloader:
+for segments, emotions, n_segments, filenames in dataloader:
     # For each segment,
     # 1. Extract 384d IS09 Emotion features using SMILExtract
     # 2. Extract 32x129 spectogram using torchaudio transform (16ms frame size, 8ms step size, 256 fft bins)
-    for segment in segments:
+    for i in range(len(segments)):
         # 1. Save segment as .wav file and extract 384d IS09 emotion features using SMILExtract
-        torchaudio.save('segment.wav', segment, sample_rate=16000, precision=16, channels_first=False)
-        execute_string = 'SMILExtract -C ' + config_file_path + ' -I ' + 'segment.wav' + ' -csvoutput ' + output_file_name  # + '-instname <string>'
+        torchaudio.save('segment.wav', segments[i], sample_rate=16000, precision=16, channels_first=False)
+        execute_string = 'SMILExtract -C ' + config_file_path + ' -I ' + 'segment.wav' + ' -csvoutput ' + output_file_name + ' -instname ' + str(i) + '_' + filenames[i]
         os.system(execute_string)
 
         # 2. Extract 32x129 spectrograms using torchaudio transform (16ms frame size, 8ms step size, 256 fft bins)
-        specgram = specgram_transform(segment.view(1, -1))
-
-        x = 0
-
+        specgram = specgram_transform(segments[i].view(1, -1))
 
 # Iterate through dataset and extract features of each sample using SMILExtract
 # For os.system(execute_string) to work on Linux:
