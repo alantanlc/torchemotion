@@ -126,6 +126,7 @@ class IemocapDataset(object):
         return waveforms, emotions
 
     def collate_fn_segments(batch):
+        # Segment each sample into 264ms frames and 25ms sliding window
         sample_rate = 16000
         segment_length = np.int(0.264 * sample_rate)
         step_length = np.int(0.025 * sample_rate)
@@ -169,7 +170,7 @@ class IemocapDataset(object):
         return segments, emotions, n_segments, filenames
 
     def collate_fn(batch):
-        # Frame the signal into 20-40ms frames. 25ms is standard.
+        # Frame each sample into 25ms frames and 10ms sliding (step) window.
         # This means that the frame length for a 16kHz signal is 0.025 * 16000 = 400 samples.
         # Frame step is usually something like 10ms (160 samples), which allows some overlap to the frames.
         # The first 400 sample frame starts at sample 0, the next 400 sample frame starts at sample 160 etc until the end of the speech file is reached.
