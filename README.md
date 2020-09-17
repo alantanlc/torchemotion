@@ -20,7 +20,7 @@ The aim of torchemotion is to apply [PyTorch](https://github.com/pytorch/pytorch
 
 First, download the EmoDB dataset from [here](http://emodb.bilderbar.info/docu/#download). 
 
-Then, initialize an `EmodbDataset` object by passing in the path to the `download` directory of the EmoDB dataset:
+Then, initialize an `EmodbDataset` object by passing in the path to the `download` directory that resides in the `emodb` directory:
 
 ```python
 import EmodbDataset
