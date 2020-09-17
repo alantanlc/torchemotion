@@ -4,3 +4,5 @@ smile.log
 *.csv
 *.arff
 *.wav
+
+opensmile/config/
