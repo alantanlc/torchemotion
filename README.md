@@ -18,7 +18,9 @@ The aim of torchemotion is to apply [PyTorch](https://github.com/pytorch/pytorch
 <details open>
 <summary>IEMOCAP</summary>
 
-First, obtain the IEMOCAP dataset by filling out the electronic release form and submit a request [here](https://sail.usc.edu/iemocap/iemocap_release.htm).
+First, obtain the IEMOCAP dataset by following the steps [here](https://sail.usc.edu/iemocap/iemocap_release.htm). You will need to submit an [electronic release form](https://sail.usc.edu/iemocap/release_form.php) to SAIL lab at USC. They respond pretty quickly (3-5 days) and will email you the download link.
+
+Unzip the file after download.
 
 Then, initialize an [IemocapDataset](./datasets/IemocapDataset.py) object by passing in the path to the __IEMOCAP_full_release__ directory.
 
@@ -37,7 +39,7 @@ for index, sample in enumerate(iemocap_dataset):
 <details open>
 <summary>EmoDB</summary>
 
-First, download the EmoDB dataset from [here](http://emodb.bilderbar.info/docu/#download). 
+First, download and unzip the EmoDB dataset from [here](http://emodb.bilderbar.info/docu/#download). 
 
 Then, initialize an [EmodbDataset](./datasets/EmodbDataset.py) object by passing in the path to the __download__ directory.
 
@@ -56,7 +58,7 @@ for index, sample in enumerate(emodb_dataset):
 <details open>
 <summary>RAVDESS</summary>
 
-First, download the RAVDESS dataset from [here](https://zenodo.org/record/1188976/files/Audio_Speech_Actors_01-24.zip?download=1).
+First, download and unzip the RAVDESS dataset from [here](https://zenodo.org/record/1188976/files/Audio_Speech_Actors_01-24.zip?download=1).
 
 Then, initialize an [RavdessDataset](./datasets/RavdessDataset.py) object by passing in the path to the __Audio_Speech_Actors_01-24__ directory.
 
