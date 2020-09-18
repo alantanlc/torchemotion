@@ -54,7 +54,7 @@ for index, sample in enumerate(emodb_dataset):
 </details>
 
 <details open>
-<summary>RAVESS</summary>
+<summary>RAVDESS</summary>
 
 First, download the RAVDESS dataset from [here](https://zenodo.org/record/1188976/files/Audio_Speech_Actors_01-24.zip?download=1).
 
