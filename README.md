@@ -1,5 +1,4 @@
-torchemotion: an emotion recognition library for PyTorch
-========================================
+# torchemotion: an emotion recognition library for PyTorch
 
 The aim of torchemotion is to apply [PyTorch](https://github.com/pytorch/pytorch) and [torchaudio](https://github.com/pytorch/audio) to the emotion recognition domain. We begin with providing basic dataloaders to read popular emotional datasets.
 
