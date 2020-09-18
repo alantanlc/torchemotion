@@ -16,21 +16,59 @@ The aim of torchemotion is to apply [PyTorch](https://github.com/pytorch/pytorch
 ## Example Usage
 
 <details open>
+<summary>IEMOCAP</summary>
+
+First, obtain the IEMOCAP dataset by filling out the electronic release form and submit a request [here](https://sail.usc.edu/iemocap/iemocap_release.htm).
+
+Then, initialize an [IemocapDataset](./datasets/IemocapDataset.py) object by passing in the path to the __IEMOCAP_full_release__ directory.
+
+```python
+import IemocapDataset
+
+# Initialize IemocapDataset
+iemocap_dataset = IemocapDataset('./IEMOCAP_full_release')
+
+# Iterate over data
+for index, sample in enumerate(iemocap_dataset):
+    print(index, sample)
+```
+</details>
+
+<details open>
 <summary>EmoDB</summary>
 
 First, download the EmoDB dataset from [here](http://emodb.bilderbar.info/docu/#download). 
 
-Then, initialize an `EmodbDataset` object by passing in the path to the `download` directory that resides in the `emodb` directory:
+Then, initialize an [EmodbDataset](./datasets/EmodbDataset.py) object by passing in the path to the __download__ directory.
 
 ```python
 import EmodbDataset
 
 # Initialize EmodbDataset
-emodb_data = EmodbDataset('/emodb/download')
+emodb_data = EmodbDataset('./download')
 
 # Iterate over data
 for index, sample in enumerate(emodb_dataset):
-    print(i, sample)
+    print(index, sample)
+```
+</details>
+
+<details open>
+<summary>RAVESS</summary>
+
+First, download the RAVDESS dataset from [here](https://zenodo.org/record/1188976/files/Audio_Speech_Actors_01-24.zip?download=1).
+
+Then, initialize an [RavdessDataset](./datasets/RavdessDataset.py) object by passing in the path to the __Audio_Speech_Actors_01-24__ directory.
+
+```python
+import RavdessDataset
+
+# Initialize RavdessDataset
+ravdess_dataset = RavdessDataset('./Audio_Speech_Actors_01-24')
+
+# Iterate over data
+for index, sample in enumerate(ravdess_dataset):
+    print(index, sample)
 ```
 </details>
 
