@@ -1,4 +1,4 @@
-torchemotion: an emotion library for PyTorch
+torchemotion: an emotion recognition library for PyTorch
 ========================================
 
 The aim of torchemotion is to apply [PyTorch](https://github.com/pytorch/pytorch) and [torchaudio](https://github.com/pytorch/audio) to the emotion recognition domain. We begin with providing basic dataloaders to read popular emotional datasets.
@@ -36,7 +36,7 @@ for index, sample in enumerate(iemocap_dataset):
 ```
 </details>
 
-<details open>
+<details>
 <summary>EmoDB</summary>
 
 First, download and unzip the EmoDB dataset from [here](http://emodb.bilderbar.info/docu/#download). 
@@ -55,7 +55,7 @@ for index, sample in enumerate(emodb_dataset):
 ```
 </details>
 
-<details open>
+<details>
 <summary>RAVDESS</summary>
 
 First, download and unzip the RAVDESS dataset from [here](https://zenodo.org/record/1188976/files/Audio_Speech_Actors_01-24.zip?download=1).
