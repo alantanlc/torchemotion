@@ -35,7 +35,7 @@ for index, sample in enumerate(iemocap_dataset):
 ```
 </details>
 
-<details>
+<details open>
 <summary>EmoDB</summary>
 
 First, download and unzip the EmoDB dataset from [here](http://emodb.bilderbar.info/docu/#download). 
@@ -54,7 +54,7 @@ for index, sample in enumerate(emodb_dataset):
 ```
 </details>
 
-<details>
+<details open>
 <summary>RAVDESS</summary>
 
 First, download and unzip the RAVDESS dataset from [here](https://zenodo.org/record/1188976/files/Audio_Speech_Actors_01-24.zip?download=1).
